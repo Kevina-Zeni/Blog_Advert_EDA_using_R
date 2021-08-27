@@ -1,0 +1,408 @@
+---
+title: "Online Cryptography Advertisement Data Collection"
+author: "Kevina Zeni"
+date: "8/26/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+#install.packages('plyr', repos = "http://cran.us.r-project.org")
+```
+
+# Project Overview
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. She would now like to employ your services as a Data Science Consultant to help her identify which individuals are most likely to click on her ads. 
+
+**Defining the Research Question**
+Using the data available to us, identify individuals most likely to click on the entreprenuers adverstisements.
+
+**Defining our metric for Success**
+We should be able to successfuly identify individuals most likely to click on the entrepreneurs
+
+**Experimental Design**
+. Data Preparation
+. Data Cleaning
+. Descriptive Analysis
+. Uni variate visualizations
+. Multivariate visualizations
+. Recording our findings
+. Recommendations and Conclusions
+
+#setting our working directory
+setwd("C://Users//Revolve//Documents//Basics Practice")
+
+#confirming that our working directory has been set
+getwd()
+
+## a) Data Preparation
+
+*Loading and reading our dataset*
+
+
+```{r}
+data <- read.csv('advertising.csv')
+```
+
+**Accessing Basic Information about our dataset**
+
+```{r}
+View(data)#shows the values of csv file in a table format
+print(nrow(data))#shows number of rows
+print(ncol(data))#shows number of columns
+print(colnames(data))#shows column names
+print(str(data))#Returns column names with data types and factors
+```
+Our data set has 1000 rows and 10 columns. The dtypes are "int" and "chr". Some of our variables include Country, number of clicks, Gender(Male),City, Age, Daily Internet Usage e.t.c
+
+## b) Data Cleaning
+
+We will import the following libraries to aid us in the data cleaning process
+
+```{r}
+# Loading funModeling!
+library(funModeling)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(pander)
+library(forcats)
+```
+We will profile our data set to find missing values, zeros, unique values and filter or remove where appropriate
+
+```{r}
+df_status(data)#function can help us by showing these numbers in relative and percentage values. It also retrieves the infinite and zeros statistics
+```
+```{r}
+sum(is.na(data))#confirming there are no Null values
+```
+```{r}
+# checking for duplicates
+duplicated_rows <- colSums(data[duplicated(data),])
+duplicated_rows
+```
+From the above we can deduce that there are two categorical variables as shown by their binary output(unique values: 2). Our dataset has no missing values
+and 50% amount of zeros in the Male and Clicked on Ad columns which happen to be our categorical variables
+
+**Finding Outliers**
+We will proceed to check whether our data has any outstanding outliers using boxplots
+
+```{r}
+
+Age <- data$Age
+Daily_Time_Spent_on_Site <- data$ Daily.Time.Spent.on.Site 
+Daily_Internet_Usage <- data$Daily.Internet.Usage
+Area_Income <- data$Area.Income
+ 
+
+boxplot(Daily_Time_Spent_on_Site, Daily_Internet_Usage,
+main = "Multiple boxplots to check for outliers",
+at = c(1,2),
+names = c("Time", "Usage"),
+las = 2,
+col = c("orange", "blue"),
+border = "brown",
+horizontal = TRUE,
+notch = TRUE
+)
+```
+There are no outliers
+
+```{r}
+boxplot(Age, Area_Income ,
+main = "Multiple boxplots to check for outliers",
+at = c(1,2),
+names = c("Age", "Income"),
+las = 2,
+col = c("orange", "red"),
+border = "brown",
+horizontal = TRUE,
+notch = TRUE
+)
+```
+There are some outliers in the Area Income Col. We will not remove the outliers as we are not sure of the context of area income.
+
+
+
+
+## c) Exploratory Data Analyis
+
+*Descriptive Analysis*
+```{r}
+#install.packages("lessR")
+#library("lessR")
+```
+*Measures of Central Tendancy*
+MEAN
+
+
+```{r}
+x2 <- list(mean(data$Age), mean(data$Daily.Time.Spent.on.Site), mean(data$Daily.Internet.Usage), mean(data$Area.Income))
+
+for(i in x2) {                                           
+ 
+  print(paste("The mean is", i))#Displays the mean of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+}
+```
+MEDIAN
+```{r}
+
+median(data$Age)
+median(data$Daily.Time.Spent.on.Site)
+median(data$Daily.Internet.Usage)
+median(data$Area.Income) #Displays the median of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+```
+MODE
+While mode is not exactly a measure of central tendancy, we will try to find the most frequent values across our variables
+```{r}
+#install.packages("DescTools")
+#library ("DescTools")
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+age.mode = getmode(data$Age)
+dailytime.mode = getmode(data$Daily.Time.Spent.on.Site)
+dailyusage.mode = getmode(data$Daily.Internet.Usage)
+aincome.mode = getmode(data$Area.Income)
+
+
+print(dailytime.mode) ##Displays the median of our numerical variables: Age, #Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+print(age.mode)
+print(aincome.mode)
+print(dailyusage.mode)
+
+```
+
+*Measures of dispersion*
+Standard deviation
+```{r}
+sd(data$Age)
+sd(data$Daily.Time.Spent.on.Site)
+sd(data$Daily.Internet.Usage)
+sd(data$Area.Income) #Displays the standard of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+```
+Range
+```{r}
+range(data$Age)
+range(data$Daily.Time.Spent.on.Site)
+range(data$Daily.Internet.Usage)
+range(data$Area.Income) #Displays the range of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+```
+Min
+```{r}
+min(data$Age)
+min(data$Daily.Time.Spent.on.Site)
+min(data$Daily.Internet.Usage)
+min(data$Area.Income) #Displays the minimum value of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+```
+Max
+```{r}
+max(data$Age)
+max(data$Daily.Time.Spent.on.Site)
+max(data$Daily.Internet.Usage)
+max(data$Area.Income) #Displays the maximum value of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+```
+Skewness
+```{r}
+library(moments)
+
+```
+
+```{r}
+skewness(data$Age)
+skewness(data$Daily.Time.Spent.on.Site)
+skewness(data$Daily.Internet.Usage)
+skewness(data$Area.Income) #Displays the skewness of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+```
+Kurtosis
+```{r}
+kurtosis(data$Age)
+kurtosis(data$Daily.Time.Spent.on.Site)
+kurtosis(data$Daily.Internet.Usage)
+kurtosis(data$Area.Income) #Displays the kurtosis of our numerical variables: Age, Daily Time Spent on Site, Daily Internet Usage, Area Income consecutively
+```
+The distribution of the Age variable is positively skewed meaning its tail is on the right side while the rest of the variables are negatively skewed while all the variable have a negative kurtosis implying thin tails.
+
+**Uni variate visualizations**
+
+
+```{r}
+#Profiling our Categorical variables
+freq(data=data, input = c('Clicked.on.Ad','Male'))
+```
+48.1% of our subjects are male while 51.9% are not as depicted above while the click on adds is balanced (50-50%)
+
+```{r}
+freq(data=data$Timestamp)
+```
+
+```{r}
+freq(data=data$Country)
+```
+Most users were from Czetch Republic and France.
+
+```{r}
+freq(data=data$City)
+```
+Most users are from Lisamouth and Williamsport.
+
+```{r}
+#data %>%
+#    ggplot(aes(Age)) +
+#    geom_histogram(binwidth = 1.25, color = "black",fill = "grey") +
+#    labs(title = "Distribution of cIty relative to clicks",
+#         x = "Area.Income",
+#         y = "Age") +
+#    theme_minimal() +
+#    scale_x_continuous(breaks = seq(7.5,35,2.5)) +
+#    facet_grid(Clicked.on.Ad~.)
+```
+
+
+**Profiling our numerical Variables**
+```{r}
+plot_num(data)#This function  plots the distribution of every numerical variable while automatically excluding the non-numerical ones
+```
+
+
+From the above we can see that the age distributions is mostly on the right showing that most of the blog visitors ar below 40 years. Daily time spent is highest at 80.The Area income is above 50000 and its highest at around 70000 with the daily internet usage highest at 120 appr.Most users were from the countries Czetch Republic and France, and from the Cities, Lisamouth and Williamsport.
+
+### Correlation and Relationships
+
+```{r}
+# Loading needed libraries
+library(funModeling) # contains heart_disease data
+#install.packages('minerva')
+#library(minerva) # contains MIC statistic
+library(ggplot2)
+library(dplyr)
+library(lessR)
+library(reshape2) 
+library(gridExtra) # allow us to plot two plots in a row
+options(scipen=999) # disable scientific notation
+```
+
+```{r}
+#b<- BarChart(Daily.Time.Spent.on.Site, data=data, by=Country)
+#b$freq
+```
+
+
+We will first look at the linear correlation between variables and our target variable
+
+```{r}
+correlation_table(data=data, target="Clicked.on.Ad")
+```
+Age is the is the most important -numerical- variable though it has a weak correlation with our target variable, The rest have negative correlation
+We can see the visualization below
+
+
+*Numerical VS Numerical visualizations*
+
+```{r}
+cross_plot(data, input = "Age", target = "Clicked.on.Ad", plot_type = "percentual")
+```
+The likely hood of clicking on an ad increases if the users are 41-61 year old males.
+
+
+```{r}
+#Checking the correlation Daily Time Spent on Site and Internet Usage
+
+# simple scatterplot
+ggplot(data, 
+       aes(x = Daily.Internet.Usage, 
+           y = Daily.Time.Spent.on.Site)) +
+  geom_point(color="cornflowerblue", 
+             size = 2, 
+             alpha=.8) +
+   geom_smooth(method = "lm") +
+   labs(x = "Time spent and Internet Usage",
+       y = "",
+       title = "Daily Time Spent vs. Internet Usage")
+
+```
+Finding the covariance between the two
+
+```{r}
+    
+cor(data$Daily.Time.Spent.on.Site, data$Daily.Internet.Usage, method="pearson")         # apply the cov function 
+
+```
+The two variables are moderately correlated
+
+```{r}
+#Checking the correlation Area Income on Site and Internet Usage
+
+# simple scatterplot
+ggplot(data, 
+       aes(x = Daily.Internet.Usage, 
+           y = Area.Income)) +
+  geom_point(color="cornflowerblue", 
+             size = 2, 
+             alpha=.8) +
+  # geom_smooth(method = "lm") +
+   labs(x = "Internet Usage and Area Income",
+       y = "",
+       title = "Area Income vs. Internet Usage")
+
+```
+```{r}
+cor(data$Daily.Internet.Usage, data$Area.Income, method="pearson")
+```
+The variables are moderately correlated
+
+```{r}
+#Checking the correlation Age on Site and Internet Usage
+
+# simple scatterplot
+ggplot(data, 
+       aes(x = Daily_Internet_Usage, 
+           y = Age)) +
+  geom_point(color="cornflowerblue", 
+             size = 2, 
+             alpha=.8) +
+  # geom_smooth(method = "lm") +
+   labs(x = "Internet Usage and Age",
+       y = "",
+       title = "Age vs. Internet Usage")
+```
+```{r}
+cor(data$Daily.Internet.Usage, data$Age, method="pearson")
+```
+
+###**Multivariate Analysis**
+
+```{r}
+numeric_v <- data %>%
+  select_if(is.numeric) %>%
+  select(Age, Daily.Time.Spent.on.Site, Area.Income, Daily.Internet.Usage)
+```
+
+```{r}
+#install.packages('GGally')
+library(GGally)
+library(ggplot2)
+ggpairs(numeric_v[,-5])+ theme_bw()
+```
+
+## Conclusions
+As noted previously we have deduced a couple of things from our EDA. 
+Most of the blog users:
+ - Are not male (could identify as female or other)
+ - Come from Czetch Republic and France countries,
+ - Come from Lisamouth and Williamsport cities,
+ - Web users range from the age of 19 to 61.
+ 
+## Recommendations
+It seems that most users are actually not male. The entrepreneur could target the other users to tap into ad clicks. 
+
+We would also like to exhaustively explore the relationship between variables to find definitive relationship.
+
+
+
+
